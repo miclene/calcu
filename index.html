@@ -1,0 +1,298 @@
+
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Calculator</title>
+     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+             display: flex;
+             justify-content: center;
+             align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 10px;
+         }
+
+        .calculator {
+            background: #ffffff;
+            padding: 25px;
+             border-radius: 20px;
+            width: 100%;
+            max-width: 320px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .display-area {
+            margin-bottom: 20px;
+         }
+
+        #display {
+            width: 100%;
+            height: 80px;
+            font-size: 32px;
+            font-weight: bold;
+             text-align: right;
+            padding: 15px;
+            border: 2px solid #c3cfe2;
+            border-radius: 10px;
+            background: #f0f4f8;
+            color: #2c3e50;
+            overflow: hidden;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .buttons {
+             display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+         }
+
+        button {
+             padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+             border: none;
+            border-radius: 10px;
+             cursor: pointer;
+            transition: all 0.3s ease;
+            color: #2c3e50;
+         }
+
+        .btn-number {
+            background: #e8ecf1;
+        }
+
+        .btn-number:hover {
+            background: #d1dae6;
+            transform: scale(1.05);
+        }
+
+        .btn-operator {
+            background: #5b9fff;
+            color: white;
+        }
+
+        .btn-operator:hover {
+            background: #4a8ae6;
+            transform: scale(1.05);
+        }
+
+        .btn-equals {
+            background: #52c41a;
+            grid-column: span 2;
+            color: white;
+        }
+
+        .btn-equals:hover {
+            background: #45a915;
+            transform: scale(1.05);
+        }
+
+        .btn-clear {
+            background: #f5665d;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #ff7a7a;
+            transform: scale(1.05);
+        }
+
+        .btn-function {
+            background: #fdcb6e;
+            color: #2d3436;
+        }
+
+        .btn-function:hover {
+            background: #f39c12;
+            transform: scale(1.05);
+        }
+
+        .btn-memory {
+            background: #40228d;
+            color:white;
+        }
+
+        .btn-memory:hover {
+            background: #b8a5ff;
+            transform: scale(1.05);
+        }
+
+        button:active {
+             opacity: 0.8;
+        }
+
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 15px;
+                max-width: 100%;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 16px;
+            }
+
+            #display {
+                height: 70px;
+                font-size: 28px;
+                padding: 10px;
+            }
+         }
+     </style>
+ </head>
+ <body>
+     <div class="calculator">
+        <div class="display-area">
+            <input type="text" id="display" disabled>
+        </div>
+         <div class="buttons">
+            <!-- Memory Functions -->
+            <button class="btn-memory" onclick="memoryAdd()">M+</button>
+            <button class="btn-memory" onclick="memorySubtract()">M-</button>
+            <button class="btn-memory" onclick="memoryRecall()">MRC</button>
+            <button class="btn-memory" onclick="memoryClear()">MCL</button>
+
+            <!-- First Row -->
+            <button class="btn-clear" onclick="clearDisplay()">C</button>
+            <button class="btn-clear" onclick="deleteLastChar()">DEL</button>
+            <button class="btn-function" onclick="append('%')">%</button>
+            <button class="btn-operator" onclick="append('/')">÷</button>
+
+            <!-- Numbers Row 1 -->
+            <button class="btn-number" onclick="append('7')">7</button>
+            <button class="btn-number" onclick="append('8')">8</button>
+            <button class="btn-number" onclick="append('9')">9</button>
+            <button class="btn-operator" onclick="append('*')">×</button>
+
+            <!-- Numbers Row 2 -->
+            <button class="btn-number" onclick="append('4')">4</button>
+            <button class="btn-number" onclick="append('5')">5</button>
+            <button class="btn-number" onclick="append('6')">6</button>
+            <button class="btn-operator" onclick="append('-')">-</button>
+
+            <!-- Numbers Row 3 -->
+            <button class="btn-number" onclick="append('1')">1</button>
+            <button class="btn-number" onclick="append('2')">2</button>
+            <button class="btn-number" onclick="append('3')">3</button>
+            <button class="btn-operator" onclick="append('+')">+</button>
+ 
+            <!-- Numbers Row 4 -->
+            <button class="btn-number" onclick="append('0')" style="grid-column: span 2;">0</button>
+            <button class="btn-number" onclick="append('.')">.</button>
+            <button class="btn-equals" onclick="calculate()">=</button>
+
+            <!-- Functions Row -->
+            <button class="btn-function" onclick="squareRoot()" style="grid-column: span 2;">√</button>
+            <button class="btn-function" onclick="power()" style="grid-column: span 2;">x²</button>
+        </div>
+     </div>
+
+     <script>
+         let memory = 0;
+        const display = document.getElementById('display');
+
+        function append(value) {
+            // Prevent multiple operators in a row
+            if (['+', '-', '*', '/', '%'].includes(value)) {
+                const lastChar = display.value[display.value.length - 1];
+                if (['+', '-', '*', '/', '%'].includes(lastChar)) {
+                    display.value = display.value.slice(0, -1) + value;
+                    return;
+                }
+            }
+            display.value += value;
+        }
+
+        function clearDisplay() {
+            display.value = '';
+        }
+
+        function deleteLastChar() {
+            display.value = display.value.slice(0, -1);
+        }
+
+        function calculate() {
+            try {
+                const result = eval(display.value);
+                display.value = result;
+            } catch (error) {
+                display.value = 'Error';
+                setTimeout(() => clearDisplay(), 1000);
+            }
+         }
+
+        function squareRoot() {
+            try {
+                const value = Math.sqrt(parseFloat(display.value));
+                display.value = value;
+            } catch (error) {
+                display.value = 'Error';
+                setTimeout(() => clearDisplay(), 1000);
+            }
+         }
+
+        function power() {
+            try {
+                const value = parseFloat(display.value);
+                display.value = value * value;
+            } catch (error) {
+                display.value = 'Error';
+                setTimeout(() => clearDisplay(), 1000);
+            }
+         }
+ 
+        function memoryAdd() {
+            try {
+                memory += parseFloat(display.value) || 0;
+                display.value = '';
+            } catch (error) {
+                display.value = 'Error';
+            }
+        }
+
+        function memorySubtract() {
+            try {
+                memory -= parseFloat(display.value) || 0;
+                display.value = '';
+            } catch (error) {
+                display.value = 'Error';
+            }
+        }
+
+        function memoryRecall() {
+            display.value = memory;
+        }
+
+        function memoryClear() {
+            memory = 0;
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (event) => {
+            if (event.key >= '0' && event.key <= '9') append(event.key);
+            if (event.key === '.') append('.');
+            if (event.key === '+' || event.key === '-' || event.key === '*' || event.key === '/') append(event.key);
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                calculate();
+            }
+            if (event.key === 'Backspace') {
+                event.preventDefault();
+                deleteLastChar();
+            }
+            if (event.key === 'Escape') clearDisplay();
+        });
+     </script>
+ </body>
+ </html>
